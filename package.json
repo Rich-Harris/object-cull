@@ -1,10 +1,10 @@
 {
-  "name": "TODO",
-  "description": "TODO",
+  "name": "object-cull",
+  "description": "object-cull",
   "version": "1.0.0",
-  "repository": "Rich-Harris/TODO",
-  "main": "dist/TODO.umd.js",
-  "module": "dist/TODO.esm.js",
+  "repository": "Rich-Harris/object-cull",
+  "main": "dist/object-cull.umd.js",
+  "module": "dist/object-cull.esm.js",
   "types": "types/index.d.ts",
   "files": [
     "dist",
