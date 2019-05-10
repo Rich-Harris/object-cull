@@ -39,42 +39,6 @@ console.log(culled);
 ]
 */
 
-const { prepare, apply } = require('./');
-
-const proxy = prepare({
-	firstname: 'Terrell',
-	lastname: 'Snider',
-	friends: [
-		{ firstname: 'Rachelle', lastname: 'Knight' },
-		{ firstname: 'Ila', lastname: 'Farrell' },
-		{ firstname: 'Vasquez', lastname: 'Flynn' }
-	],
-	pets: [
-		{ name: 'Bobo', species: 'Great Dane' }
-	]
-});
-
-console.log(proxy.firstname); // Terrell
-console.log(proxy.friends[0].firstname); // Rachelle
-
-const { kept, culled } = apply(proxy);
-
-console.log(kept);
-/*
-{ firstname: 'Terrell', friends: [ { firstname: 'Rachelle' } ] }
-*/
-
-console.log(culled);
-/*
-[
-	{ path: 'lastname', value: 'Snider' },
-	{ path: 'friends.0.lastname', value: 'Knight' },
-	{ path: 'friends.1', value: { firstname: 'Ila', lastname: 'Farrell' } },
-	{ path: 'friends.2', value: { firstname: 'Vasquez', lastname: 'Flynn' } },
-	{ path: 'pets', value: [ { name: 'Bobo', species: 'Great Dane' } ] }
-]
-*/
-
 const unused_bytes = culled.reduce((total, item) => {
 	return total + JSON.stringify(item.value).length;
 }, 0);
