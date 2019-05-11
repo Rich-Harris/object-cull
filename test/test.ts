@@ -88,4 +88,27 @@ describe('object-cull', () => {
 			]
 		});
 	});
+
+	it('binds methods', () => {
+		const obj = {
+			map: new Map([
+				[1, 'a'],
+				[2, 'b']
+			])
+		};
+
+		const proxy = prepare(obj);
+
+		assert.equal(proxy.map.get(1), 'a');
+
+		assert.deepEqual(apply(obj), {
+			kept: {
+				map: new Map([
+					[1, 'a'],
+					[2, 'b']
+				])
+			},
+			culled: []
+		});
+	});
 });

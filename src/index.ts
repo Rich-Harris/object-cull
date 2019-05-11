@@ -19,7 +19,7 @@ function add_read(obj: any, prop: string) {
 const handler: ProxyHandler<any> = {
 	get: (obj: any, prop: string) => {
 		add_read(obj, prop);
-		return to_proxy(obj[prop]);
+		return to_proxy(obj[prop], obj);
 	},
 	set: (obj: any, prop: string, value: any) => {
 		obj[prop] = value;
@@ -27,18 +27,22 @@ const handler: ProxyHandler<any> = {
 	}
 }
 
-function to_proxy(input: any) {
-	if (typeof input !== 'object') {
-		return input;
+function to_proxy(value: any, parent: any) {
+	if (typeof value === 'function' && parent) {
+		return value.bind(parent);
 	}
 
-	if (!proxy_lookup.has(input)) {
-		const proxy = new Proxy(input, handler);
-		proxy_lookup.set(input, proxy);
-		object_lookup.set(proxy, input);
+	if (typeof value !== 'object') {
+		return value;
 	}
 
-	return proxy_lookup.get(input);
+	if (!proxy_lookup.has(value)) {
+		const proxy = new Proxy(value, handler);
+		proxy_lookup.set(value, proxy);
+		object_lookup.set(proxy, value);
+	}
+
+	return proxy_lookup.get(value);
 }
 
 export function prepare(input: any) {
@@ -48,7 +52,11 @@ export function prepare(input: any) {
 		reads = new WeakMap();
 	}
 
-	return to_proxy(input);
+	return to_proxy(input, null);
+}
+
+function get_type(thing: any) {
+	return Object.prototype.toString.call(thing).slice(8, -1);
 }
 
 function apply_at_path(path: string, object: any, culled: Culled[]) {
@@ -56,8 +64,12 @@ function apply_at_path(path: string, object: any, culled: Culled[]) {
 
 	if (!proxy) return object;
 
-	// TODO others... Map? Set?
-	const kept: Array<any> | Record<string, any> = Array.isArray(object) ? Array(object.length) : {};
+	const type = get_type(object);
+	if (type !== 'Array' && type !== 'Object') return object; // bail. TODO Map/Set/etc?
+
+	const kept: Array<any> | Record<string, any> = (
+		type === 'Array' ? Array(object.length) : {}
+	);
 
 	const was_read = reads.get(object);
 
