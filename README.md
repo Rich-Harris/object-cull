@@ -51,7 +51,7 @@ console.log(`${percent_unused}% of the data was unused`);
 
 ## Why?
 
-Mostly for server-side rendering. You might not to serialize *all* your data to send it to the client.
+Mostly for server-side rendering. You might not need to serialize *all* your data to send it to the client.
 
 
 ## Prior art
