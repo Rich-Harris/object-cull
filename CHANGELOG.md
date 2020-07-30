@@ -1,5 +1,9 @@
 # object-cull changelog
 
+## 1.1.1
+
+* Handle array destructuring assignments ([#4](https://github.com/Rich-Harris/object-cull/issues/4))
+
 ## 1.1.0
 
 * Only preserve array length if it is accessed

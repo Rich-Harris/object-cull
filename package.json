@@ -1,7 +1,7 @@
 {
   "name": "object-cull",
   "description": "object-cull",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "repository": "Rich-Harris/object-cull",
   "main": "dist/object-cull.umd.js",
   "module": "dist/object-cull.esm.js",
