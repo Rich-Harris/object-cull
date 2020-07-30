@@ -128,4 +128,37 @@ test('binds methods', () => {
 	});
 });
 
+test('destructuring objects works', () => {
+	const obj = { a: 1, b: 2, c: 3 };
+	const proxy = prepare(obj);
+
+	const { b } = proxy;
+
+	assert.is(b, 2);
+
+	assert.equal(apply(obj), {
+		kept: { b: 2 },
+		culled: [
+			{ path: 'a', value: 1 },
+			{ path: 'c', value: 3 }
+		]
+	});
+});
+
+test('destructuring arrays works', () => {
+	const arr = ['a', 'b', 'c'];
+	const proxy = prepare(arr);
+
+	const [, x] = proxy;
+
+	assert.is(x, 'b');
+
+	assert.equal(apply(arr), {
+		kept: ['a', 'b', ,],
+		culled: [
+			{ path: '2', value: 'c' }
+		]
+	});
+});
+
 test.run();

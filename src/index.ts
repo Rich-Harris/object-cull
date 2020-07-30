@@ -10,8 +10,11 @@ function add_read(obj: any, prop: string) {
 }
 
 const handler: ProxyHandler<any> = {
-	get: (obj: any, prop: string) => {
-		add_read(obj, prop);
+	get: (obj: any, prop: string | symbol) => {
+		// handle array destructuring assignments (`const [a, b, c] = proxy`)
+		if (typeof prop === 'symbol') return obj[prop];
+
+		add_read(obj, prop as string);
 		return to_proxy(obj[prop], obj);
 	},
 	set: (obj: any, prop: string, value: any) => {
