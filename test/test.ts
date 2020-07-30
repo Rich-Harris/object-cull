@@ -1,114 +1,131 @@
-import * as assert from 'assert';
+import { test } from 'uvu';
+import * as assert from 'uvu/assert';
 import { prepare, apply } from '../src/index';
 
-describe('object-cull', () => {
-	it('culls unread properties from an object', () => {
-		const obj = {
-			foo: 1,
-			bar: 2
-		};
+test('culls unread properties from an object', () => {
+	const obj = {
+		foo: 1,
+		bar: 2
+	};
 
-		const proxy = prepare(obj);
-		assert.equal(proxy.foo, 1);
+	const proxy = prepare(obj);
+	assert.is(proxy.foo, 1);
 
-		assert.deepEqual(apply(obj), {
-			kept: {
-				foo: 1
-			},
-			culled: [
-				{ path: 'bar', value: 2 }
-			]
-		});
+	assert.equal(apply(obj), {
+		kept: {
+			foo: 1
+		},
+		culled: [
+			{ path: 'bar', value: 2 }
+		]
 	});
+});
 
-	it('culls unread properties from a proxy', () => {
-		const proxy = prepare({
-			foo: 1,
-			bar: 2
-		});
-		assert.equal(proxy.foo, 1);
-
-		assert.deepEqual(apply(proxy), {
-			kept: {
-				foo: 1
-			},
-			culled: [
-				{ path: 'bar', value: 2 }
-			]
-		});
+test('culls unread properties from a proxy', () => {
+	const proxy = prepare({
+		foo: 1,
+		bar: 2
 	});
+	assert.is(proxy.foo, 1);
 
-	it('culls unread properties from an array', () => {
-		const arr = ['a', 'b', 'c'];
-
-		const proxy = prepare(arr);
-		assert.equal(proxy[1], 'b');
-
-		assert.deepEqual(apply(arr), {
-			kept: [, 'b', ,],
-			culled: [
-				{ path: '0', value: 'a' },
-				{ path: '2', value: 'c' }
-			]
-		});
+	assert.equal(apply(proxy), {
+		kept: {
+			foo: 1
+		},
+		culled: [
+			{ path: 'bar', value: 2 }
+		]
 	});
+});
 
-	it('culls nested properties', () => {
-		// https://www.json-generator.com/
-		const user = {
+test('culls unread properties from an array', () => {
+	const arr = ['a', 'b', 'c'];
+
+	const proxy = prepare(arr);
+	assert.is(proxy[1], 'b');
+
+	assert.equal(apply(arr), {
+		kept: [, 'b'],
+		culled: [
+			{ path: '0', value: 'a' },
+			{ path: '2', value: 'c' }
+		]
+	});
+});
+
+test('preserves array length if length is accessed', () => {
+	const arr = ['a', 'b', 'c'];
+
+	const proxy = prepare(arr);
+	assert.is(proxy[1], 'b');
+	assert.is(proxy.length, 3);
+
+	assert.equal(apply(arr), {
+		kept: [, 'b', ,],
+		culled: [
+			{ path: '0', value: 'a' },
+			{ path: '2', value: 'c' }
+		]
+	});
+});
+
+test('culls nested properties', () => {
+	// https://www.json-generator.com/
+	const user = {
+		firstname: 'Terrell',
+		lastname: 'Snider',
+		friends: [
+			{ firstname: 'Rachelle', lastname: 'Knight' },
+			{ firstname: 'Ila', lastname: 'Farrell' },
+			{ firstname: 'Vasquez', lastname: 'Flynn' }
+		],
+		pets: [
+			{ name: 'Bobo', species: 'Great Dane' }
+		]
+	};
+
+	const proxy = prepare(user);
+	assert.is(proxy.firstname, 'Terrell');
+	assert.is(proxy.friends[0].firstname, 'Rachelle');
+
+	assert.equal(apply(user), {
+		kept: {
 			firstname: 'Terrell',
-			lastname: 'Snider',
 			friends: [
-				{ firstname: 'Rachelle', lastname: 'Knight' },
-				{ firstname: 'Ila', lastname: 'Farrell' },
-				{ firstname: 'Vasquez', lastname: 'Flynn' }
-			],
-			pets: [
-				{ name: 'Bobo', species: 'Great Dane' }
+				{ firstname: 'Rachelle' }
 			]
-		};
-
-		const proxy = prepare(user);
-		assert.equal(proxy.firstname, 'Terrell');
-		assert.equal(proxy.friends[0].firstname, 'Rachelle');
-
-		assert.deepEqual(apply(user), {
-			kept: {
-				firstname: 'Terrell',
-				friends: [
-					{ firstname: 'Rachelle' }
-				]
-			},
-			culled: [
-				{ path: 'lastname', value: 'Snider' },
-				{ path: 'friends.0.lastname', value: 'Knight' },
-				{ path: 'friends.1', value: { firstname: 'Ila', lastname: 'Farrell' } },
-				{ path: 'friends.2', value: { firstname: 'Vasquez', lastname: 'Flynn' } },
-				{ path: 'pets', value: [ { name: 'Bobo', species: 'Great Dane' } ] }
-			]
-		});
+		},
+		culled: [
+			{ path: 'lastname', value: 'Snider' },
+			{ path: 'friends.0.lastname', value: 'Knight' },
+			{ path: 'friends.1', value: { firstname: 'Ila', lastname: 'Farrell' } },
+			{ path: 'friends.2', value: { firstname: 'Vasquez', lastname: 'Flynn' } },
+			{ path: 'pets', value: [ { name: 'Bobo', species: 'Great Dane' } ] }
+		]
 	});
+});
 
-	it('binds methods', () => {
-		const obj = {
+test('binds methods', () => {
+	const obj = {
+		map: new Map([
+			[1, 'a'],
+			[2, 'b']
+		])
+	};
+
+	const proxy = prepare(obj);
+
+	assert.is(proxy.map.get(1), 'a');
+
+	assert.equal(apply(obj), {
+		kept: {
 			map: new Map([
 				[1, 'a'],
 				[2, 'b']
 			])
-		};
-
-		const proxy = prepare(obj);
-
-		assert.equal(proxy.map.get(1), 'a');
-
-		assert.deepEqual(apply(obj), {
-			kept: {
-				map: new Map([
-					[1, 'a'],
-					[2, 'b']
-				])
-			},
-			culled: []
-		});
+		},
+		culled: []
 	});
 });
+
+test.run();

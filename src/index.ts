@@ -1,19 +1,12 @@
 let proxy_lookup: WeakMap<any, typeof Proxy>;
-let object_lookup: WeakMap<any, typeof Proxy>;
-let proxies: WeakSet<typeof Proxy>;
-let reads: WeakMap<any, Record<string, number>>;
+let object_lookup: WeakMap<typeof Proxy, any>;
+let reads: WeakMap<any, Set<string>>;
 
 type Culled = { path: string, value: any };
 
 function add_read(obj: any, prop: string) {
-	if (!reads.has(obj)) reads.set(obj, {});
-
-	const local = reads.get(obj);
-	if (prop in local) {
-		local[prop] += 1;
-	} else {
-		local[prop] = 1;
-	}
+	if (!reads.has(obj)) reads.set(obj, new Set());
+	reads.get(obj).add(prop)
 }
 
 const handler: ProxyHandler<any> = {
@@ -68,7 +61,7 @@ function apply_at_path(path: string, object: any, culled: Culled[]) {
 	if (type !== 'Array' && type !== 'Object') return object; // bail. TODO Map/Set/etc?
 
 	const kept: Array<any> | Record<string, any> = (
-		type === 'Array' ? Array(object.length) : {}
+		type === 'Array' ? [] : {}
 	);
 
 	const was_read = reads.get(object);
@@ -76,7 +69,7 @@ function apply_at_path(path: string, object: any, culled: Culled[]) {
 	Object.keys(object).forEach(key => {
 		const child_path = path ? `${path}.${key}` : key;
 
-		if (was_read[key]) {
+		if (was_read.has(key)) {
 			(kept as Record<string, any>)[key] = apply_at_path(child_path, object[key], culled);
 		} else {
 			culled.push({
@@ -85,6 +78,11 @@ function apply_at_path(path: string, object: any, culled: Culled[]) {
 			});
 		}
 	});
+
+	// treat length as a special case, since it's non-enumerable
+	if (type === 'Array' && was_read.has('length')) {
+		kept.length = object.length;
+	}
 
 	return kept;
 }
