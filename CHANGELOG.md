@@ -1,5 +1,9 @@
 # object-cull changelog
 
+## 1.1.4
+
+* Handle nulls
+
 ## 1.1.3
 
 * Error on non-prepared object

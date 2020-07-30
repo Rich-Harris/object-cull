@@ -28,7 +28,7 @@ function to_proxy(value: any, parent: any) {
 		return value.bind(parent);
 	}
 
-	if (typeof value !== 'object') {
+	if (!value || typeof value !== 'object') {
 		return value;
 	}
 

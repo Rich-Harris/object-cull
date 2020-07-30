@@ -192,19 +192,20 @@ test('errors if apply called on non-prepared object', () => {
 });
 
 test('keeps everything if object is stringified', () => {
-	const obj = { foo: ['a', 'b', 'c'] };
+	const obj = { foo: ['a', 'b', 'c'], bar: null };
 	const proxy = prepare(obj);
 
 	const json = JSON.stringify(proxy, null, '  ');
 
 	assert.equal(apply(obj), {
 		kept: {
-			foo: ['a', 'b', 'c']
+			foo: ['a', 'b', 'c'],
+			bar: null
 		},
 		culled: []
 	});
 
-	assert.equal(json, `{\n  "foo": [\n    "a",\n    "b",\n    "c"\n  ]\n}`);
+	assert.equal(json, `{\n  "foo": [\n    "a",\n    "b",\n    "c"\n  ],\n  "bar": null\n}`);
 });
 
 test.run();
