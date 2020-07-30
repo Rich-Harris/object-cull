@@ -56,9 +56,7 @@ function get_type(thing: any) {
 }
 
 function apply_at_path(path: string, object: any, culled: Culled[]) {
-	const proxy = proxy_lookup.get(object);
-
-	if (!proxy) return object;
+	if (!proxy_lookup.has(object)) return object;
 
 	const type = get_type(object);
 	if (type !== 'Array' && type !== 'Object') return object; // bail. TODO Map/Set/etc?
@@ -72,7 +70,7 @@ function apply_at_path(path: string, object: any, culled: Culled[]) {
 	Object.keys(object).forEach(key => {
 		const child_path = path ? `${path}.${key}` : key;
 
-		if (was_read.has(key)) {
+		if (was_read && was_read.has(key)) {
 			(kept as Record<string, any>)[key] = apply_at_path(child_path, object[key], culled);
 		} else {
 			culled.push({
@@ -83,7 +81,7 @@ function apply_at_path(path: string, object: any, culled: Culled[]) {
 	});
 
 	// treat length as a special case, since it's non-enumerable
-	if (type === 'Array' && was_read.has('length')) {
+	if (type === 'Array' && was_read && was_read.has('length')) {
 		kept.length = object.length;
 	}
 

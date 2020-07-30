@@ -161,4 +161,28 @@ test('destructuring arrays works', () => {
 	});
 });
 
+test('culls unread objects with unread properties', () => {
+	const obj = { arr: [] };
+	prepare(obj);
+
+	assert.equal(apply(obj), {
+		kept: {},
+		culled: [
+			{ path: 'arr', value: [] }
+		]
+	})
+});
+
+test('keeps read objects with unread properties', () => {
+	const obj = { arr: [] };
+	const proxy = prepare(obj);
+
+	assert.ok(proxy.arr);
+
+	assert.equal(apply(obj), {
+		kept: { arr: [] },
+		culled: []
+	})
+});
+
 test.run();
