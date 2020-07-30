@@ -185,4 +185,26 @@ test('keeps read objects with unread properties', () => {
 	})
 });
 
+test('errors if apply called on non-prepared object', () => {
+	const obj = {};
+
+	assert.throws(() => apply(obj), 'You must call `prepare` before calling `apply`');
+});
+
+test('keeps everything if object is stringified', () => {
+	const obj = { foo: ['a', 'b', 'c'] };
+	const proxy = prepare(obj);
+
+	const json = JSON.stringify(proxy, null, '  ');
+
+	assert.equal(apply(obj), {
+		kept: {
+			foo: ['a', 'b', 'c']
+		},
+		culled: []
+	});
+
+	assert.equal(json, `{\n  "foo": [\n    "a",\n    "b",\n    "c"\n  ]\n}`);
+});
+
 test.run();

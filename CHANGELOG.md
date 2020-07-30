@@ -1,5 +1,13 @@
 # object-cull changelog
 
+## 1.1.3
+
+* Error on non-prepared object
+
+## 1.1.2
+
+* Handle objects with unread properties
+
 ## 1.1.1
 
 * Handle array destructuring assignments ([#4](https://github.com/Rich-Harris/object-cull/issues/4))

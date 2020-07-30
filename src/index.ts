@@ -89,9 +89,13 @@ function apply_at_path(path: string, object: any, culled: Culled[]) {
 }
 
 export function apply(object: any) {
-	if (object_lookup.has(object)) {
+	if (object_lookup && object_lookup.has(object)) {
 		// input was a proxy — we need the underlying object
 		object = object_lookup.get(object);
+	}
+
+	if (!proxy_lookup.has(object)) {
+		throw new Error('You must call `prepare` before calling `apply`');
 	}
 
 	const culled: Culled[] = [];
